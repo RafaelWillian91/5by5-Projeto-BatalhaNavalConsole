@@ -1,4 +1,6 @@
-﻿Console.WriteLine("******** Jogo Batalha Naval ********");
+﻿using System.Security.Cryptography;
+
+Console.WriteLine("******** Jogo Batalha Naval ********");
 
 const string AGUA = "A";
 const string CRUZADOR = "CZ";
@@ -10,6 +12,8 @@ int dimensaoTabuleiro = int.Parse(Console.ReadLine());
 
 string[,] tabuleiroJogador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
 string[,] tabuleiroComputador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
+
+IniciarPartida();
 
 // Inicializar os tabuleiros
 void MontarTabuleiroJogadores()
@@ -25,20 +29,26 @@ void MontarTabuleiroJogadores()
 }
 
 // Definir os navios que serão posicionados
-void PosicionarPecas()
+//Decomposição funcional: divido um problema grande em funções menores
+//Orquestração: um método coordena a execução de outros
+void PosicionarPecasJogadores()
 {
-    PosicionarNavio("Contratorpedeiro", 1, CONTRATORPEDEIRO);
+    PosicionarNavio("Contratorpedeiro", 1);
+    PosicionarNavioComputador("Contratorpedeiro", 1);
 
-    PosicionarNavio("Submarino", 2, SUBMARINO);
+    PosicionarNavio("Submarino", 2);
+    PosicionarNavioComputador("Submarino", 2);
 
-    PosicionarNavio("Cruzador", 3, CRUZADOR);
+    PosicionarNavio("Cruzador", 3);
+    PosicionarNavioComputador("Cruzador", 3);
 }
 
 // Posicionar qualquer tipo de navio
-void PosicionarNavio(string nomeNavio, int tamanhoNavio, string simbolo)
+void PosicionarNavio(string nomeNavio, int tamanhoNavio)
 {
     Console.WriteLine($"\nPosicione seu {nomeNavio} ({tamanhoNavio} posições).");
 
+    //identifica qual tipo de navio é
     if (tamanhoNavio == 1)
     {
         Console.WriteLine("Informe a linha e a coluna. Exemplo: 3,4");
@@ -61,7 +71,7 @@ void PosicionarNavio(string nomeNavio, int tamanhoNavio, string simbolo)
 
         do
         {
-            Console.Write($"Informe a {i + 1}ª posição do {nomeNavio}: ");
+            Console.Write($"Informe a {i + 1}º posição do {nomeNavio}: ");
 
             string[] coordenadas = Console.ReadLine().Split(',');
 
@@ -70,7 +80,7 @@ void PosicionarNavio(string nomeNavio, int tamanhoNavio, string simbolo)
 
             jogadaValida = true;
 
-            // Validar limites do tabuleiro
+            // Validar limites do tabuleiro (borda)
             if (novaX < 0 || novaX >= dimensaoTabuleiro ||
                 novaY < 0 || novaY >= dimensaoTabuleiro)
             {
@@ -83,7 +93,7 @@ void PosicionarNavio(string nomeNavio, int tamanhoNavio, string simbolo)
                 Console.WriteLine("Essa posição já está ocupada!");
                 jogadaValida = false;
             }
-            // Validar se a posição é consecutiva
+            // Validar se a posição é consecutiva apos uma jogada pelo menos
             else if (i > 0)
             {
                 jogadaValida = ValidarJogada(
@@ -102,12 +112,76 @@ void PosicionarNavio(string nomeNavio, int tamanhoNavio, string simbolo)
         } while (!jogadaValida);
 
         // Registrar a posição no tabuleiro
-        tabuleiroJogador[novaX, novaY] = simbolo;
+        tabuleiroJogador[novaX, novaY] = nomeNavio;
 
-        // Guardar a coordenada para a próxima validação
+        // Guardar a coordenada para comparação com a próxima jogada
         coordenadaAnteriorX = novaX;
         coordenadaAnteriorY = novaY;
     }
+}
+
+void PosicionarNavioComputador(string nomeNavio, int tamanhoNavio)
+{
+    bool jogadaValida = false;
+
+    do
+    {
+        // Sorteia a primeira posição do navio
+        int linha = Random.Shared.Next(0, dimensaoTabuleiro);
+        int coluna = Random.Shared.Next(0, dimensaoTabuleiro);
+
+        // 0 = horizontal | 1 = vertical
+        int direcao = Random.Shared.Next(0, 2);
+
+        jogadaValida = true;
+
+        // Verifica se todas as posições estão disponíveis
+        for (int i = 0; i < tamanhoNavio; i++)
+        {
+            int novaX = linha;
+            int novaY = coluna;
+
+            if (direcao == 0)
+            {
+                novaY = coluna + i;
+            }
+            else
+            {
+                novaX = linha + i;
+            }
+
+            // Verifica os limites do tabuleiro
+            if (novaX >= dimensaoTabuleiro || novaY >= dimensaoTabuleiro)
+            {
+                jogadaValida = false;
+                break;
+            }
+
+            // Verifica se a posição já está ocupada
+            if (tabuleiroComputador[novaX, novaY] != AGUA)
+            {
+                jogadaValida = false;
+                break;
+            }
+        }
+
+        // Se todas as posições forem válidas, posiciona o navio
+        if (jogadaValida)
+        {
+            for (int i = 0; i < tamanhoNavio; i++)
+            {
+                if (direcao == 0)
+                {
+                    tabuleiroComputador[linha, coluna + i] = nomeNavio;
+                }
+                else
+                {
+                    tabuleiroComputador[linha + i, coluna] = nomeNavio;
+                }
+            }
+        }
+
+    } while (!jogadaValida);
 }
 
 // Verificar se as coordenadas são consecutivas
@@ -144,7 +218,28 @@ void MostrarTabuleiroJogador()
     }
 }
 
-// Execução principal
-MontarTabuleiroJogadores();
-PosicionarPecas();
-MostrarTabuleiroJogador();
+void MostrarTabuleiroComputador()
+{
+    Console.WriteLine("\n******** Tabuleiro do COMPUTADOR ********");
+
+    for (int i = 0; i < dimensaoTabuleiro; i++)
+    {
+        for (int j = 0; j < dimensaoTabuleiro; j++)
+        {
+            Console.Write(tabuleiroComputador[i, j] + "\t");
+        }
+
+        Console.WriteLine();
+    }
+}
+
+
+void IniciarPartida()
+{
+    // Execução principal
+    MontarTabuleiroJogadores();
+    PosicionarPecasJogadores();
+    MostrarTabuleiroJogador();
+    MostrarTabuleiroComputador();
+}
+
