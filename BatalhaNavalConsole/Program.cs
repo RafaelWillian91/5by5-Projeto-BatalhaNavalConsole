@@ -19,6 +19,8 @@ const string TORPEDO = "TP";
 bool inicializar = true;
 int dimensaoTabuleiro = 0;
 
+string[,] tabuleiroJogador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
+string[,] tabuleiroComputador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
 void DefinirDimensaoTabuleiro()
 {
     do
@@ -40,8 +42,7 @@ void DefinirDimensaoTabuleiro()
     } while (inicializar);
 }
 
-string[,] tabuleiroJogador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
-string[,] tabuleiroComputador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
+
 
 IniciarPartida();
 
@@ -355,16 +356,26 @@ bool VerificarTabuleiro(string[,] tabuleiro)
 
 void MontarPartida()
 {
-    // Execução principal
+    // Solicitar e validar a dimensão
+    DefinirDimensaoTabuleiro();
+
+    // Criar os tabuleiros com a dimensão escolhida
+    tabuleiroJogador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
+    tabuleiroComputador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
+
+    // Inicializar e posicionar os navios
     MontarTabuleiroJogadores();
     PosicionarPecasJogadores();
+
+    // Exibir tabuleiro do jogador
     MostrarTabuleiroJogador();
-    MostrarTabuleiroComputador();
+
+    // Modo teste
+    // MostrarTabuleiroComputador();
 }
 
 void IniciarPartida()
 {
-    DefinirDimensaoTabuleiro();
 
     {
         MontarPartida();
