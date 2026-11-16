@@ -271,7 +271,7 @@ bool TorpedoJogador()
 
     do
     {
-        Console.WriteLine("Escolha um alvo em coordenadas. (Exemplo: 2,2): ");
+        Console.WriteLine("Escolha um alvo em coordenadas. (Exemplo: 2,2): \n");
         string[] coordenadas = Console.ReadLine().Split(',');
 
         int coordX = int.Parse(coordenadas[0]);
@@ -280,21 +280,21 @@ bool TorpedoJogador()
         if (coordX < 0 || coordX >= dimensaoTabuleiro ||
             coordY < 0 || coordY >= dimensaoTabuleiro)
         {
-            Console.WriteLine("Coordenada fora do tabuleiro!");
+            Console.WriteLine("Coordenada fora do tabuleiro!\n");
         }
         else if (tabuleiroComputador[coordX, coordY] == TORPEDO)
         {
-            Console.WriteLine("Você já atacou essa coordenada!");
+            Console.WriteLine("Você já atacou essa coordenada!\n");
         }
         else
         {
             if (tabuleiroComputador[coordX, coordY] == AGUA)
             {
-                Console.WriteLine("Você errou o torpedo!");
+                Console.WriteLine("Você errou o torpedo!\n");
             }
             else
             {
-                Console.WriteLine("BOOOOM! Você acertou o navio inimigo!");
+                Console.WriteLine("BOOOOM! Você acertou o navio inimigo!\n");
             }
 
             tabuleiroComputador[coordX, coordY] = TORPEDO;
@@ -320,13 +320,13 @@ bool TorpedoComputador()
 
         if (tiro == AGUA)
         {
-            Console.WriteLine("Seu oponente errou!!");
+            Console.WriteLine("Seu oponente errou!!\n");
             validarJogada = false;
         }else if (tiro == TORPEDO)
         {
             validarJogada = true;
         }else {
-            Console.WriteLine("BOOOOOMMMM!!!! Seu adversário acertou seu navio!!");
+            Console.WriteLine("BOOOOOMMMM!!!! Seu adversário acertou seu navio!!\n");
             validarJogada = false;
         }
 
