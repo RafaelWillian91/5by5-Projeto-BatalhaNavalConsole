@@ -1,16 +1,44 @@
 ﻿using System.Security.Cryptography;
 
-Console.WriteLine("******** Jogo Batalha Naval ********");
+Console.WriteLine(@"
+╔══════════════════════════════════════════╗
+║                                          ║
+║           BATALHA NAVAL                  ║
+║                                          ║
+║         PREPARE SUA FROTA!               ║
+║                                          ║
+╚══════════════════════════════════════════╝
+");
 
 const string AGUA = "A";
 const string CRUZADOR = "CZ";
 const string SUBMARINO = "SB";
 const string CONTRATORPEDEIRO = "CP";
-
 const string TORPEDO = "TP";
 
-Console.Write("Informe a quantidade de linhas e colunas do tabuleiro: ");
-int dimensaoTabuleiro = int.Parse(Console.ReadLine());
+bool inicializar = true;
+int dimensaoTabuleiro = 0;
+
+void DefinirDimensaoTabuleiro()
+{
+    do
+    {
+        Console.Write("Informe a quantidade de linhas e colunas do tabuleiro (5 a 10): ");
+        dimensaoTabuleiro = int.Parse(Console.ReadLine());
+        inicializar = false;
+
+        if (dimensaoTabuleiro < 5)
+        {
+            Console.WriteLine("Dimensão do tabuleiro inválida");
+            inicializar = true;
+        }
+        else if (dimensaoTabuleiro > 10)
+        {
+            Console.WriteLine("Dimensão do tabuleiro inválida");
+            inicializar = true;
+        }
+    } while (inicializar);
+}
 
 string[,] tabuleiroJogador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
 string[,] tabuleiroComputador = new string[dimensaoTabuleiro, dimensaoTabuleiro];
@@ -336,6 +364,8 @@ void MontarPartida()
 
 void IniciarPartida()
 {
+    DefinirDimensaoTabuleiro();
+
     {
         MontarPartida();
 
