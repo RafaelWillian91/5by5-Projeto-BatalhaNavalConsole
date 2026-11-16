@@ -7,6 +7,8 @@ const string CRUZADOR = "CZ";
 const string SUBMARINO = "SB";
 const string CONTRATORPEDEIRO = "CP";
 
+const string TORPEDO = "TP";
+
 Console.Write("Informe a quantidade de linhas e colunas do tabuleiro: ");
 int dimensaoTabuleiro = int.Parse(Console.ReadLine());
 
@@ -33,18 +35,18 @@ void MontarTabuleiroJogadores()
 //Orquestração: um método coordena a execução de outros
 void PosicionarPecasJogadores()
 {
-    PosicionarNavio("Contratorpedeiro", 1);
-    PosicionarNavioComputador("Contratorpedeiro", 1);
+    PosicionarNavio("Contratorpedeiro", 1, "CP");
+    PosicionarNavioComputador("Contratorpedeiro", 1, "CP");
 
-    PosicionarNavio("Submarino", 2);
-    PosicionarNavioComputador("Submarino", 2);
+    PosicionarNavio("Submarino", 2, "SB");
+    PosicionarNavioComputador("Submarino", 2, "SB");
 
-    PosicionarNavio("Cruzador", 3);
-    PosicionarNavioComputador("Cruzador", 3);
+    PosicionarNavio("Cruzador", 3, "CZ");
+    PosicionarNavioComputador("Cruzador", 3, "CZ");
 }
 
 // Posicionar qualquer tipo de navio
-void PosicionarNavio(string nomeNavio, int tamanhoNavio)
+void PosicionarNavio(string nomeNavio, int tamanhoNavio, string apelindoNavio)
 {
     Console.WriteLine($"\nPosicione seu {nomeNavio} ({tamanhoNavio} posições).");
 
@@ -112,7 +114,7 @@ void PosicionarNavio(string nomeNavio, int tamanhoNavio)
         } while (!jogadaValida);
 
         // Registrar a posição no tabuleiro
-        tabuleiroJogador[novaX, novaY] = nomeNavio;
+        tabuleiroJogador[novaX, novaY] = apelindoNavio;
 
         // Guardar a coordenada para comparação com a próxima jogada
         coordenadaAnteriorX = novaX;
@@ -120,7 +122,7 @@ void PosicionarNavio(string nomeNavio, int tamanhoNavio)
     }
 }
 
-void PosicionarNavioComputador(string nomeNavio, int tamanhoNavio)
+void PosicionarNavioComputador(string nomeNavio, int tamanhoNavio, string apelindoNavio)
 {
     bool jogadaValida = false;
 
@@ -141,6 +143,7 @@ void PosicionarNavioComputador(string nomeNavio, int tamanhoNavio)
             int novaX = linha;
             int novaY = coluna;
 
+            //adiciona +1 para saber se o navio não irá extrapolar o tabuleiro
             if (direcao == 0)
             {
                 novaY = coluna + i;
@@ -150,7 +153,7 @@ void PosicionarNavioComputador(string nomeNavio, int tamanhoNavio)
                 novaX = linha + i;
             }
 
-            // Verifica os limites do tabuleiro
+            // Verifica os limites do tabuleiro de acordo com o tamanho do navio
             if (novaX >= dimensaoTabuleiro || novaY >= dimensaoTabuleiro)
             {
                 jogadaValida = false;
@@ -172,11 +175,11 @@ void PosicionarNavioComputador(string nomeNavio, int tamanhoNavio)
             {
                 if (direcao == 0)
                 {
-                    tabuleiroComputador[linha, coluna + i] = nomeNavio;
+                    tabuleiroComputador[linha, coluna + i] = apelindoNavio;
                 }
                 else
                 {
-                    tabuleiroComputador[linha + i, coluna] = nomeNavio;
+                    tabuleiroComputador[linha + i, coluna] = apelindoNavio;
                 }
             }
         }
@@ -233,8 +236,96 @@ void MostrarTabuleiroComputador()
     }
 }
 
+bool TorpedoJogador()
+{
+    bool validarJogada = true;
 
-void IniciarPartida()
+    do
+    {
+        Console.WriteLine("Escolha um alvo em coordenadas. (Exemplo: 2,2): ");
+        string[] coordenadas = Console.ReadLine().Split(',');
+
+        int coordX = int.Parse(coordenadas[0]);
+        int coordY = int.Parse(coordenadas[1]);
+
+        if (coordX < 0 || coordX >= dimensaoTabuleiro ||
+            coordY < 0 || coordY >= dimensaoTabuleiro)
+        {
+            Console.WriteLine("Coordenada fora do tabuleiro!");
+        }
+        else if (tabuleiroComputador[coordX, coordY] == TORPEDO)
+        {
+            Console.WriteLine("Você já atacou essa coordenada!");
+        }
+        else
+        {
+            if (tabuleiroComputador[coordX, coordY] == AGUA)
+            {
+                Console.WriteLine("Você errou o torpedo!");
+            }
+            else
+            {
+                Console.WriteLine("BOOOOM! Você acertou o navio inimigo!");
+            }
+
+            tabuleiroComputador[coordX, coordY] = TORPEDO;
+            validarJogada = false;
+        }
+
+    } while (validarJogada);
+
+    return VerificarTabuleiro(tabuleiroComputador);
+}
+
+bool TorpedoComputador()
+{
+
+    bool validarJogada = true;
+
+    do
+    {
+        int linha = Random.Shared.Next(0, dimensaoTabuleiro);
+        int coluna = Random.Shared.Next(0, dimensaoTabuleiro);
+
+        string tiro = tabuleiroJogador[linha, coluna];
+
+        if (tiro == AGUA)
+        {
+            Console.WriteLine("Seu oponente errou!!");
+            validarJogada = false;
+        }else if (tiro == TORPEDO)
+        {
+            validarJogada = true;
+        }else {
+            Console.WriteLine("BOOOOOMMMM!!!! Seu adversário acertou seu navio!!");
+            validarJogada = false;
+        }
+
+        tabuleiroJogador[linha, coluna] = TORPEDO;
+    } while (validarJogada);
+
+    return VerificarTabuleiro(tabuleiroJogador);
+}
+
+bool VerificarTabuleiro(string[,] tabuleiro)
+{
+    for (int i = 0; i < dimensaoTabuleiro; i++)
+    {
+        for (int j = 0; j < dimensaoTabuleiro; j++)
+        {
+            if (tabuleiro[i, j] == CONTRATORPEDEIRO ||
+                tabuleiro[i, j] == SUBMARINO ||
+                tabuleiro[i, j] == CRUZADOR)
+            {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+void MontarPartida()
 {
     // Execução principal
     MontarTabuleiroJogadores();
@@ -243,3 +334,31 @@ void IniciarPartida()
     MostrarTabuleiroComputador();
 }
 
+void IniciarPartida()
+{
+    {
+        MontarPartida();
+
+        bool partidaAndamento = true;
+
+        do
+        {
+            partidaAndamento = TorpedoJogador();
+
+            if (!partidaAndamento)
+            {
+                Console.WriteLine("Parabéns! Você venceu!");
+                break;
+            }
+
+            partidaAndamento = TorpedoComputador();
+
+            if (!partidaAndamento)
+            {
+                Console.WriteLine("O computador venceu!");
+                break;
+            }
+
+        } while (partidaAndamento);
+    }
+}
